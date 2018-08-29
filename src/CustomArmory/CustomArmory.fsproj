@@ -9,11 +9,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="FSharp.Data" Version="3.0.0-beta4" />
     <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.*" />
     <PackageReference Include="Giraffe" Version="2.0.*" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Data\AllAchievements.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Kosiilspaan.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Compile Include="Data.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 

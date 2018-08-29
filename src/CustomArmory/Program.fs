@@ -8,6 +8,7 @@ open Microsoft.AspNetCore.Hosting
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.DependencyInjection
 open Giraffe
+open FSharp.Data
 
 // ---------------------------------
 // Models
@@ -32,18 +33,23 @@ module Views =
                 link [ _rel  "stylesheet"
                        _type "text/css"
                        _href "/main.css" ]
+                script [ ] [ rawText "var whTooltips = {colorLinks: true, iconizeLinks: true, renameLinks: true, iconSize: 'large'};" ]
+                script [ _src "https://wow.zamimg.com/widgets/power.js" ] []
             ]
             body [] content
         ]
 
-    let partial () =
-        h1 [] [ encodedText "CustomArmory" ]
-
-    let index (model : Message) =
-        [
-            partial()
-            p [] [ encodedText model.Text ]
-        ] |> layout
+    let index (model : Data.AllAchievements.Achievement[]) =
+        [ol [] [yield! model |> Array.map (fun c -> 
+            li [] [
+                h2 [] [ encodedText c.Name ]
+                div [] [yield! c.Achievements |> Array.map (fun ach -> a [ _href (sprintf "https://www.wowhead.com/achievement=%i" ach.Id) ] [] )]
+                ol [] [yield! c.Categories |> Array.map (fun cat -> li [] [
+                    h3 [] [encodedText cat.Name]
+                    div [] [yield! cat.Achievements |> Array.map (fun ach ->  a [ _href (sprintf "https://www.wowhead.com/achievement=%i" ach.Id) ] [ ] )]
+                ])]
+            ])]]
+        |> layout
 
 // ---------------------------------
 // Web app
@@ -51,7 +57,8 @@ module Views =
 
 let indexHandler (name : string) =
     let greetings = sprintf "Hello %s, from Giraffe!" name
-    let model     = { Text = greetings }
+    
+    let model     = Data.categories
     let view      = Views.index model
     htmlView view
 
@@ -98,7 +105,7 @@ let configureServices (services : IServiceCollection) =
 
 let configureLogging (builder : ILoggingBuilder) =
     let filter (l : LogLevel) = l.Equals LogLevel.Error
-    builder.AddFilter(filter).AddConsole().AddDebug() |> ignore
+    builder(*.AddFilter(filter)*).AddConsole().AddDebug() |> ignore
 
 [<EntryPoint>]
 let main _ =
