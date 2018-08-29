@@ -8,7 +8,6 @@ open Microsoft.AspNetCore.Hosting
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.DependencyInjection
 open Giraffe
-open FSharp.Data
 
 // ---------------------------------
 // Models
@@ -33,20 +32,29 @@ module Views =
                 link [ _rel  "stylesheet"
                        _type "text/css"
                        _href "/main.css" ]
-                script [ ] [ rawText "var whTooltips = {colorLinks: true, iconizeLinks: true, renameLinks: true, iconSize: 'large'};" ]
-                script [ _src "https://wow.zamimg.com/widgets/power.js" ] []
+                script [  ] [ rawText "var whTooltips = {colorLinks: true, iconizeLinks: true, renameLinks: false, iconSize: 'large'};" ]
+                script [ _async; _src "https://wow.zamimg.com/widgets/power.js" ] []
             ]
             body [] content
         ]
 
+    let achievementLink' (id,crs) =
+        a [ _href (sprintf "//wowhead.com/achievement=%i" id);  _rel (Data.filterCriteria crs); _class (if Map.containsKey id Data.completedAchievements then "" else "missing") ] []
+
+    let achievementLink2 (a:Data.AllAchievements.Achievement2) =
+        achievementLink' (a.Id,a.Criteria |> Array.map (fun c -> c.Id))
+
+    let achievementLink3 (a:Data.AllAchievements.Achievement3) =
+        achievementLink' (a.Id,a.Criteria |> Array.map (fun c -> c.Id))
+
     let index (model : Data.AllAchievements.Achievement[]) =
-        [ol [] [yield! model |> Array.map (fun c -> 
+        [ol [] [yield! model |> Array.map (fun c ->
             li [] [
                 h2 [] [ encodedText c.Name ]
-                div [] [yield! c.Achievements |> Array.map (fun ach -> a [ _href (sprintf "https://www.wowhead.com/achievement=%i" ach.Id) ] [] )]
+                div [] [yield! c.Achievements |> Array.map achievementLink2 ]
                 ol [] [yield! c.Categories |> Array.map (fun cat -> li [] [
                     h3 [] [encodedText cat.Name]
-                    div [] [yield! cat.Achievements |> Array.map (fun ach ->  a [ _href (sprintf "https://www.wowhead.com/achievement=%i" ach.Id) ] [ ] )]
+                    div [] [yield! cat.Achievements |> Array.map achievementLink3 ]
                 ])]
             ])]]
         |> layout
@@ -56,8 +64,6 @@ module Views =
 // ---------------------------------
 
 let indexHandler (name : string) =
-    let greetings = sprintf "Hello %s, from Giraffe!" name
-    
     let model     = Data.categories
     let view      = Views.index model
     htmlView view
