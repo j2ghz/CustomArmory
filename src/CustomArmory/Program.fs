@@ -39,7 +39,8 @@ module Views =
         ]
 
     let achievementLink' (id,crs) =
-        a [ _href (sprintf "//wowhead.com/achievement=%i" id);  _rel (Data.filterCriteria crs); _class (if Map.containsKey id Data.completedAchievements then "" else "missing") ] []
+        let earned = Map.tryFind id Data.completedAchievements
+        a [ _href (sprintf "//wowhead.com/achievement=%i&who=%s&when=%i" id (if earned.IsSome then "Kosiilspaan" else "") (Option.defaultValue 0L earned) );  _rel (Data.filterCriteria crs); _class (if Map.containsKey id Data.completedAchievements then "" else "missing") ] []
 
     let achievementLink2 (a:Data.AllAchievements.Achievement2) =
         achievementLink' (a.Id,a.Criteria |> Array.map (fun c -> c.Id))
