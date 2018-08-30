@@ -32,7 +32,7 @@ module Views =
                 link [ _rel  "stylesheet"
                        _type "text/css"
                        _href "/main.css" ]
-                script [  ] [ rawText "var whTooltips = {colorLinks: true, iconizeLinks: true, renameLinks: false, iconSize: 'large'};" ]
+                script [] [ rawText "var whTooltips = {colorLinks: true, iconizeLinks: true, renameLinks: false, iconSize: 'large'};" ]
                 script [ _async; _src "https://wow.zamimg.com/widgets/power.js" ] []
             ]
             body [] content
@@ -126,6 +126,7 @@ let main _ =
         .Configure(Action<IApplicationBuilder> configureApp)
         .ConfigureServices(configureServices)
         .ConfigureLogging(configureLogging)
+        .UseApplicationInsights()
         .Build()
         .Run()
     0
