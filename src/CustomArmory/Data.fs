@@ -1,6 +1,7 @@
 ﻿module Data
 
 open FSharp.Data
+open System
 
 type AllAchievements = JsonProvider<"Data/AllAchievements.json">
 type Character = JsonProvider<"Data/Kosiilspaan.json">
@@ -10,7 +11,6 @@ let character = (Character.Load "Data/Kosiilspaan.json")
 
 let completedAchievements =
     Seq.zip (character.Achievements.AchievementsCompleted |> Array.toSeq) (character.Achievements.AchievementsCompletedTimestamp |> Array.toSeq)
-    |> Map.ofSeq
 
 let completedCriteria =
     character.Achievements.Criteria
@@ -22,3 +22,6 @@ let filterCriteria available =
     |> Seq.map string
     |> String.concat ":"
     |> sprintf "cri=%s"
+
+let criteriaDate =
+    Seq.zip character.Achievements.Criteria character.Achievements.CriteriaTimestamp
