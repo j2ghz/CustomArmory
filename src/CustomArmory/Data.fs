@@ -7,21 +7,21 @@ type AllAchievements = JsonProvider<"Data/AllAchievements.json">
 type Character = JsonProvider<"Data/Kosiilspaan.json">
 
 let categories = (AllAchievements.Load "Data/AllAchievements.json").Achievements
-let character = (Character.Load "Data/Kosiilspaan.json")
+let character = sprintf "Data/%s.json" >> Character.Load >> fun c -> c.Achievements
 
-let completedAchievements =
-    Seq.zip (character.Achievements.AchievementsCompleted |> Array.toSeq) (character.Achievements.AchievementsCompletedTimestamp |> Array.toSeq)
+let completedAchievements (achievements:Character.Achievements)=
+    Seq.zip (achievements.AchievementsCompleted |> Array.toSeq) (achievements.AchievementsCompletedTimestamp |> Array.toSeq)
 
-let completedCriteria =
-    character.Achievements.Criteria
+let completedCriteria (achievements:Character.Achievements) =
+    achievements.Criteria
     |> Seq.ofArray
 
-let filterCriteria available =
+let filterCriteria (completedCriteria:seq<int>) (available) =
     available
     |> Seq.where (fun id -> Seq.contains id completedCriteria)
     |> Seq.map string
     |> String.concat ":"
     |> sprintf "cri=%s"
 
-let criteriaDate =
-    Seq.zip character.Achievements.Criteria character.Achievements.CriteriaTimestamp
+let criteriaDate (achievements:Character.Achievements) =
+    Seq.zip achievements.Criteria achievements.CriteriaTimestamp

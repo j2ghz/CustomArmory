@@ -28,19 +28,25 @@ type Message =
 
 let indexHandler =
     let model     = Data.categories
-    let view      = Views.index model
+    let view      = Views.index model (Data.character "Kosiilspaan")
     htmlView view
 
 let calendarHandler =
+    let char =
+        "Kosiilspaan"
+        |> Data.character
     let achievements =
-        Data.completedAchievements
+        char
+        |> Data.completedAchievements
         |> Seq.map (fun (id,time) -> time, Giraffe.GiraffeViewEngine.a [ Giraffe.GiraffeViewEngine.Attributes._href (sprintf "//wowhead.com/achievement=%i&who=%s&when=%i" id "Kosiilspaan" time ) ] [])
     let criteria =
-        Data.criteriaDate
+        char
+        |> Data.criteriaDate
         |> Seq.map (fun (id,time) -> time, Giraffe.GiraffeViewEngine.p [] [string id |> GiraffeViewEngine.encodedText])
     let model =
-        Seq.concat [achievements; criteria]
+        achievements
         |> Seq.groupBy (fun (timestamp,_) -> (DateTimeOffset.FromUnixTimeMilliseconds timestamp).Date)
+        |> Seq.sortBy fst
     let view      = Views.calendar model
     htmlView view
 
