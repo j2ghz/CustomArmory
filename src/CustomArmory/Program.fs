@@ -21,24 +21,23 @@ type Message =
         Text : string
     }
 
-
 // ---------------------------------
 // Web app
 // ---------------------------------
 
-let indexHandler =
+let indexHandler character =
     let model     = Data.categories
-    let view      = Views.index model (Data.character "Kosiilspaan")
+    let view      = Views.index model (Data.character character)
     htmlView view
 
-let calendarHandler =
+let calendarHandler character =
     let char =
-        "Kosiilspaan"
+        character
         |> Data.character
     let achievements =
         char
         |> Data.completedAchievements
-        |> Seq.map (fun (id,time) -> time, Giraffe.GiraffeViewEngine.a [ Giraffe.GiraffeViewEngine.Attributes._href (sprintf "//wowhead.com/achievement=%i&who=%s&when=%i" id "Kosiilspaan" time ) ] [])
+        |> Seq.map (fun (id,time) -> time, Giraffe.GiraffeViewEngine.a [ Giraffe.GiraffeViewEngine.Attributes._href (sprintf "//wowhead.com/achievement=%i&who=%s&when=%i" id character time ) ] [])
     let criteria =
         char
         |> Data.criteriaDate
@@ -54,8 +53,9 @@ let webApp =
     choose [
         GET >=>
             choose [
-                route "/" >=> indexHandler
-                route "/calendar" >=> calendarHandler
+                route "/" >=> redirectTo false "/Kosiilspaan/calendar"
+                routef "%s/" indexHandler
+                routef "%s/calendar" calendarHandler
             ]
         setStatusCode 404 >=> text "Not Found" ]
 
