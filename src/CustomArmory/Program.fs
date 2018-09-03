@@ -54,8 +54,8 @@ let webApp =
         GET >=>
             choose [
                 route "/" >=> redirectTo false "/Kosiilspaan/calendar"
-                routef "%s/" indexHandler
-                routef "%s/calendar" calendarHandler
+                routef "/%s/" indexHandler
+                routef "/%s/calendar" calendarHandler
             ]
         setStatusCode 404 >=> text "Not Found" ]
 

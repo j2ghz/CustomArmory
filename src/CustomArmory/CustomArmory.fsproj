@@ -16,6 +16,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Data\Alyster.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Data\AllAchievements.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
