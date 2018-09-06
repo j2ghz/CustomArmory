@@ -26,6 +26,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Compile Include="Data.fs" />
+    <Compile Include="Wowhead.fs" />
     <Compile Include="Views.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
