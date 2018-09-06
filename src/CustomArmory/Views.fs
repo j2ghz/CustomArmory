@@ -50,3 +50,31 @@ let calendar (model: seq<DateTime*seq<int64*XmlNode>>) =
             ul [] [ yield! items |> Seq.map (fun (_,link) -> li [] [ link ])]]
         )]
     ] |> layout
+
+let requirement (character:Data.Character.Root) (model:Storylines.Storyline.Requirement) =
+    div [] [
+        a [ ( sprintf "//wowhead.com/achievement=%i&who=%s" model.Achievement character.Name |> _href) ] []
+    ]
+
+let progress (character:Data.Character.Root) (model:Storylines.Storyline.Progres) =
+    li [ ( sprintf "StepProgress-item %s" (if character.Quests |> Array.contains model.Quest then "is-done" else "") |> _class) ] [
+        a [ ( sprintf "//wowhead.com/quest=%i&who=%s" model.Quest character.Name |> _href) ] []
+    ]
+
+let storyline character (model:Storylines.Storyline.Root) =
+    div [] [
+        h2 [] [ encodedText model.Title ]
+        h3 [] [ encodedText "Requirements" ]
+        div [] [ yield! model.Requirements |> Seq.map (requirement character) ]
+        h3 [] [ encodedText "Progress" ]
+        div [ _class "wrapper" ] [ ul [ _class "StepProgress" ] [ yield! model.Progress |> Seq.map (progress character) ] ]
+    ]
+
+let storylines (model:Storylines.Storyline.Root seq) (character:Data.Character.Root) =
+    [
+        script [] [ rawText "whTooltips.renameLinks= true;" ]
+        h1 [] [ encodedText "Storylines" ]
+        div [] [
+            yield! model |> Seq.map (storyline character)
+        ]
+    ] |> layout

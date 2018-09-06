@@ -7,7 +7,8 @@ type AllAchievements = JsonProvider<"Data/AllAchievements.json">
 type Character = JsonProvider<"Data/Kosiilspaan.json">
 
 let categories = (AllAchievements.Load "Data/AllAchievements.json").Achievements
-let character = sprintf "Data/%s.json" >> Character.Load >> fun c -> c.Achievements
+let character = sprintf "Data/%s.json" >> Character.Load
+let achievements = character >> fun c -> c.Achievements
 
 let completedAchievements (achievements:Character.Achievements)=
     Seq.zip (achievements.AchievementsCompleted |> Array.toSeq) (achievements.AchievementsCompletedTimestamp |> Array.toSeq)

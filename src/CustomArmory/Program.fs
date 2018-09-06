@@ -27,13 +27,13 @@ type Message =
 
 let indexHandler character =
     let model     = Data.categories
-    let view      = Views.index model (Data.character character)
+    let view      = Views.index model (Data.achievements character)
     htmlView view
 
 let calendarHandler character =
     let char =
         character
-        |> Data.character
+        |> Data.achievements
     let achievements =
         char
         |> Data.completedAchievements
@@ -49,13 +49,18 @@ let calendarHandler character =
     let view      = Views.calendar model
     htmlView view
 
+let storylinesHandler character =
+    let view = Views.storylines Storylines.getStorylines <| Data.character character
+    htmlView view
+
 let webApp =
     choose [
         GET >=>
             choose [
-                route "/" >=> redirectTo false "/Kosiilspaan/calendar"
+                route "/" >=> redirectTo false "/Kosiilspaan/storylines"
                 routef "/%s/" indexHandler
                 routef "/%s/calendar" calendarHandler
+                routef "/%s/storylines" storylinesHandler
             ]
         setStatusCode 404 >=> text "Not Found" ]
 
