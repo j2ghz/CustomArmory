@@ -1,6 +1,7 @@
 ﻿module Views
 open Giraffe.GiraffeViewEngine
 open System
+open StorylineData
 
 let layout (content: XmlNode list) =
     html [] [
@@ -51,30 +52,34 @@ let calendar (model: seq<DateTime*seq<int64*XmlNode>>) =
         )]
     ] |> layout
 
-let requirement (character:Data.Character.Root) (model:Storylines.Storyline.Requirement) =
-    div [] [
-        a [ ( sprintf "//wowhead.com/achievement=%i&who=%s" model.Achievement character.Name |> _href) ] []
-    ]
+//let requirement (character:Data.Character.Root) (model:Storylines.Storyline.Requirement) =
+//    div [] [
+//        a [ ( sprintf "//wowhead.com/achievement=%i&who=%s" model.Achievement character.Name |> _href) ] []
+//    ]
 
-let progress (character:Data.Character.Root) (model:Storylines.Storyline.Progres) =
-    li [ ( sprintf "StepProgress-item %s" (if character.Quests |> Array.contains model.Quest then "is-done" else "") |> _class) ] [
-        a [ ( sprintf "//wowhead.com/quest=%i&who=%s" model.Quest character.Name |> _href) ] []
-    ]
+//let progress (character:Data.Character.Root) (model:Storylines.Storyline.Progres) =
+//    li [ ( sprintf "StepProgress-item %s" (if character.Quests |> Array.contains model.Quest then "is-done" else "") |> _class) ] [
+//        a [ ( sprintf "//wowhead.com/quest=%i&who=%s" model.Quest character.Name |> _href) ] []
+//    ]
 
-let storyline character (model:Storylines.Storyline.Root) =
-    div [] [
-        h2 [] [ encodedText model.Title ]
-        h3 [] [ encodedText "Requirements" ]
-        div [] [ yield! model.Requirements |> Seq.map (requirement character) ]
-        h3 [] [ encodedText "Progress" ]
-        div [ _class "wrapper" ] [ ul [ _class "StepProgress" ] [ yield! model.Progress |> Seq.map (progress character) ] ]
-    ]
+let rec storyline character (sli:StorylineItem) =
+    match sli with
+    | Step (name,required,slis) ->          li [ ] [ strong [] [ encodedText name ]; ul [] ( required |> List.map (storyline character)); ol [] ( slis |> List.map (storyline character)) ]
+    | ParallelStep (name,required,slis) ->  li [ ] [ strong [] [ encodedText name ]; ul [] ( required |> List.map (storyline character)); ol [] [ div [ _style "display: flex;" ] ( slis |> List.map (storyline character)) ] ]
 
-let storylines (model:Storylines.Storyline.Root seq) (character:Data.Character.Root) =
+    //div [] [
+    //    h2 [] [ encodedText model.Title ]
+    //    h3 [] [ encodedText "Requirements" ]
+    //    div [] [ yield! model.Requirements |> Seq.map (requirement character) ]
+    //    h3 [] [ encodedText "Progress" ]
+    //    div [ _class "wrapper" ] [ ul [ _class "StepProgress" ] [ yield! model.Progress |> Seq.map (progress character) ] ]
+    //]
+
+let storylines (model:StorylineData.StorylineItem list) (character:Data.Character.Root) =
     [
         script [] [ rawText "whTooltips.renameLinks= true;" ]
         h1 [] [ encodedText "Storylines" ]
-        div [] [
+        ol [] [
             yield! model |> Seq.map (storyline character)
         ]
     ] |> layout

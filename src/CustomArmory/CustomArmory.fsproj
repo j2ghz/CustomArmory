@@ -19,7 +19,7 @@
     <Content Include="Data\**\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Compile Include="Storylines.fs" />
+    <Compile Include="StorylineData.fs" />
     <Compile Include="Data.fs" />
     <Compile Include="Views.fs" />
     <Compile Include="Program.fs" />

@@ -8,9 +8,6 @@ open Microsoft.AspNetCore.Hosting
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.DependencyInjection
 open Giraffe
-open Views
-open Giraffe
-open FSharp.Data.Runtime
 
 // ---------------------------------
 // Models
@@ -50,7 +47,7 @@ let calendarHandler character =
     htmlView view
 
 let storylinesHandler character =
-    let view = Views.storylines Storylines.getStorylines <| Data.character character
+    let view = Views.storylines StorylineData.storylines <| Data.character character
     htmlView view
 
 let webApp =
