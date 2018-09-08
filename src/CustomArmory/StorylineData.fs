@@ -1,12 +1,20 @@
 ﻿module StorylineData
 
+type LevelRequired = int
+type RepId=int
+type RepRequiredStanding = int
+type RepRequiredValue = int
+type QuestId = int
+type AchievementId = int
+type StepTitle = string
+
 type StorylineItem =
-| Step of string * StorylineItem list * StorylineItem list
-| ParallelStep of string * StorylineItem list * StorylineItem list
-| Achievement of int
-| Quest of int
-| Reputation of int*int*int
-| Level of int
+| Step of StepTitle * StorylineItem list * StorylineItem list
+| ParallelStep of StepTitle * StorylineItem list * StorylineItem list
+| Achievement of AchievementId
+| Quest of QuestId
+| Reputation of RepId * RepRequiredStanding * RepRequiredValue
+| Level of LevelRequired
 
 let Quests = List.map Quest
 
