@@ -12,8 +12,11 @@ a.missing ins {
     background: none !important;
 }
 
-.wrapper {
+div {
     background: rgba(0,0,0,0.2);
+}
+
+.wrapper {
     font-family: 'Helvetica';
     font-size: 14px;
     border: 1px solid #CCC;
