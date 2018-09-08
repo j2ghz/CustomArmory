@@ -20,7 +20,8 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Compile Include="StorylineData.fs" />
-    <Compile Include="Data.fs" />
+    <Compile Include="Character.fs" />
+    <Compile Include="Storylines.fs" />
     <Compile Include="Views.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

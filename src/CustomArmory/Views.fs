@@ -19,19 +19,19 @@ let layout (content: XmlNode list) =
     ]
 
 let achievementLink' character (id,crs) =
-    let earned = Seq.tryFind (fun (i,_) -> i = id) (character |> Data.completedAchievements) |> Option.bind (snd >> Some)
+    let earned = Seq.tryFind (fun (i,_) -> i = id) (character |> Character.completedAchievements) |> Option.bind (snd >> Some)
     let who = if earned.IsSome then "Kosiilspaan" else ""
     let time = Option.defaultValue 0L earned
-    let criteria = character |> Data.completedCriteria |> Data.filterCriteria crs
+    let criteria = character |> Character.completedCriteria |> Character.filterCriteria crs
     a [ _href (sprintf "//wowhead.com/achievement=%i&who=%s&when=%i" id who time);  _rel ( criteria ); _class (if Option.isSome earned then "" else "missing") ] []
 
-let achievementLink2 character (a:Data.AllAchievements.Achievement2) =
+let achievementLink2 character (a:Character.AllAchievements.Achievement2) =
     achievementLink' character (a.Id,a.Criteria |> Array.map (fun c -> c.Id))
 
-let achievementLink3 character (a:Data.AllAchievements.Achievement3) =
+let achievementLink3 character (a:Character.AllAchievements.Achievement3) =
     achievementLink' character (a.Id,a.Criteria |> Array.map (fun c -> c.Id) |> Array.toSeq)
 
-let index (model : Data.AllAchievements.Achievement[]) character =
+let index (model : Character.AllAchievements.Achievement[]) character =
     [ol [] [yield! model |> Array.map (fun c ->
         li [] [
             h2 [] [ encodedText c.Name ]
@@ -73,7 +73,7 @@ let achievement character achievements id =
             ] []
     ]
 
-let rec storyline (character:Data.Character.Root) (sli:StorylineItem) =
+let rec storyline (character:Character.Character.Root) (sli:StorylineItem) =
     match sli with
     | Step (name,required,slis) ->
         li [ ] [
@@ -87,12 +87,12 @@ let rec storyline (character:Data.Character.Root) (sli:StorylineItem) =
             ul [] ( required |> List.map (storyline character))
             ol [] [ div [ _style "display: flex;" ] ( slis |> List.map (storyline character)) ]
         ]
-    | Achievement id -> achievement character.Name (character.Achievements |> Data.completedAchievements) id
+    | Achievement id -> achievement character.Name (character.Achievements |> Character.completedAchievements) id
     | Level n -> span [] [ sprintf "Required level %i" n |> encodedText ] |> wrap
     | Quest id -> quest character.Quests id
     | Reputation (id,level,points) -> a [ ( sprintf "//wowhead.com/faction=%i" id |> _href) ] [] |> wrap
 
-let storylines (model:StorylineData.StorylineItem list) (character:Data.Character.Root) =
+let storylines (model:StorylineData.StorylineItem list) (character:Character.Character.Root) =
     [
         script [] [ rawText "whTooltips.renameLinks= true;" ]
         h1 [] [ encodedText "Storylines" ]

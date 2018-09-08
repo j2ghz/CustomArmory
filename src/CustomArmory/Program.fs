@@ -23,21 +23,21 @@ type Message =
 // ---------------------------------
 
 let indexHandler character =
-    let model     = Data.categories
-    let view      = Views.index model (Data.achievements character)
+    let model     = Character.categories
+    let view      = Views.index model (Character.achievements character)
     htmlView view
 
 let calendarHandler character =
     let char =
         character
-        |> Data.achievements
+        |> Character.achievements
     let achievements =
         char
-        |> Data.completedAchievements
+        |> Character.completedAchievements
         |> Seq.map (fun (id,time) -> time, Giraffe.GiraffeViewEngine.a [ Giraffe.GiraffeViewEngine.Attributes._href (sprintf "//wowhead.com/achievement=%i&who=%s&when=%i" id character time ) ] [])
     let criteria =
         char
-        |> Data.criteriaDate
+        |> Character.criteriaDate
         |> Seq.map (fun (id,time) -> time, Giraffe.GiraffeViewEngine.p [] [string id |> GiraffeViewEngine.encodedText])
     let model =
         achievements
@@ -47,7 +47,7 @@ let calendarHandler character =
     htmlView view
 
 let storylinesHandler character =
-    let view = Views.storylines StorylineData.storylines <| Data.character character
+    let view = Views.storylines StorylineData.storylines <| Character.character character
     htmlView view
 
 let webApp =

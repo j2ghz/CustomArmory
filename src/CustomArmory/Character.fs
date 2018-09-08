@@ -1,4 +1,4 @@
-﻿module Data
+﻿module Character
 
 open FSharp.Data
 open System
