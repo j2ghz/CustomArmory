@@ -61,8 +61,8 @@ let rec storyline = function
     | Step (name,required,slis) ->
         li [ ] [
             strong [] [ encodedText name ]
-            div [ _class "wrapper" ] [ ul [] ( required |> List.map storyline) ]
-            div [ _class "wrapper" ] [ ol [ _class "StepProgress" ] ( slis |> List.map storyline ) ]
+            ul [] ( required |> List.map storyline)
+            div [ ] [ ol [ _class "StepProgress" ] ( slis |> List.map storyline ) ]
         ]
     | ParallelStep (name,required,slis) ->
         li [ ] [
