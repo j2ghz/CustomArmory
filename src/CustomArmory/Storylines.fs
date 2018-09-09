@@ -40,3 +40,15 @@ let rec fromData c = function
                 |> Seq.tryFind (fst >> eq id)
                 |> Option.bind (function time -> AchievementEarned(c.Name,snd time) |> Some )
             )
+    | StorylineData.Quest(id) ->
+        Quest(
+            id,
+            Character.questCompleted c id
+        )
+    | StorylineData.Reputation(id,standing,value) ->
+        Reputation(
+            id,
+            standing,
+            value,
+
+        )

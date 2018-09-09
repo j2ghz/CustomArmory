@@ -27,3 +27,6 @@ let filterCriteria (completedCriteria:seq<int>) (available) =
 
 let criteriaDate (achievements:Character.Achievements) =
     Seq.zip achievements.Criteria achievements.CriteriaTimestamp
+
+let questCompleted (c:Character.Root) id =
+    Array.contains id c.Quests
