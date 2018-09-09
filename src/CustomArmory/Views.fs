@@ -1,7 +1,7 @@
 ﻿module Views
 open Giraffe.GiraffeViewEngine
 open System
-open StorylineData
+open Storylines
 
 let layout (content: XmlNode list) =
     html [] [
@@ -52,51 +52,52 @@ let calendar (model: seq<DateTime*seq<int64*XmlNode>>) =
         )]
     ] |> layout
 
-let wrap item = li [ _class "StepProgress-item" ] [ item ]
-
-let quest quests id =
+let wrap earned item =
     li [
-        sprintf "StepProgress-item %s" (if Array.contains id quests then "is-done" else "") |> _class
-        ] [ a [
-            sprintf "//wowhead.com/quest=%i" id |> _href
-            ] []
-    ]
+        sprintf "StepProgress-item %s" (if earned then "is-done" else "") |> _class
+    ] item
 
-let achievement character achievements id =
-    let earned = Seq.tryFind (fun (i,_) -> i = id) achievements |> Option.bind (snd >> Some)
-    let who = if earned.IsSome then character else ""
-    let time = Option.defaultValue 0L earned
-    li [
-        sprintf "StepProgress-item %s" (if earned.IsSome then "is-done" else "") |> _class
-        ] [ a [
-            sprintf "//wowhead.com/achievement=%i&who=%s&when=%i" id who time |> _href
-            ] []
-    ]
-
-let rec storyline (character:Character.Character.Root) (sli:StorylineItem) =
-    match sli with
+let rec storyline = function
     | Step (name,required,slis) ->
         li [ ] [
             strong [] [ encodedText name ]
-            div [ _class "wrapper" ] [ ul [] ( required |> List.map (storyline character)) ]
-            div [ _class "wrapper" ] [ ul [ _class "StepProgress" ] ( slis |> List.map (storyline character) ) ]
+            div [ _class "wrapper" ] [ ul [] ( required |> List.map storyline) ]
+            div [ _class "wrapper" ] [ ol [ _class "StepProgress" ] ( slis |> List.map storyline ) ]
         ]
     | ParallelStep (name,required,slis) ->
         li [ ] [
             strong [] [ encodedText name ]
-            ul [] ( required |> List.map (storyline character))
-            ol [] [ div [ _style "display: flex;" ] ( slis |> List.map (storyline character)) ]
+            ul [] ( required |> List.map storyline)
+            div [ _style "display: flex;" ] ( slis |> List.map storyline)
         ]
-    | Achievement id -> achievement character.Name (character.Achievements |> Character.completedAchievements) id
-    | Level n -> span [] [ sprintf "Required level %i" n |> encodedText ] |> wrap
-    | Quest id -> quest character.Quests id
-    | Reputation (id,level,points) -> a [ ( sprintf "//wowhead.com/faction=%i" id |> _href) ] [] |> wrap
+    | Achievement (id,earned) ->
+        wrap earned.IsSome [ a [
+                match earned with
+                    | Some(who,time) -> sprintf "//wowhead.com/achievement=%i&who=%s&when=%i" id who time
+                    | None -> sprintf "//wowhead.com/achievement=%i" id
+                |> _href
+                ] []
+        ]
+    | Level (required,earned,n) ->
+        wrap earned [p [] [ sprintf "Level %i/%i" n required |> encodedText ]]
+    | Quest (id,earned) ->
+        wrap earned [a [ sprintf "//wowhead.com/quest=%i" id |> _href ] []]
+    | Reputation (id,stnading,value,earned) ->
+        wrap earned.IsSome [
+            a [ ( sprintf "//wowhead.com/faction=%i" id |> _href) ] []
+            p [] [
+                match earned with
+                | Some(e,s,v) -> sprintf "Standing: %i/%i Value: %i/%i" s stnading v value
+                | None -> "Reputation with faction not found"
+                |> encodedText
+            ]
+        ]
 
-let storylines (model:StorylineData.StorylineItem list) (character:Character.Character.Root) =
+let storylines (model:ProcessedStorylineItem list) =
     [
         script [] [ rawText "whTooltips.renameLinks= true;" ]
         h1 [] [ encodedText "Storylines" ]
         ol [] [
-            yield! model |> Seq.map (storyline character)
+            yield! model |> Seq.map storyline
         ]
     ] |> layout

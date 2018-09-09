@@ -24,12 +24,13 @@ type Message =
 
 let indexHandler character =
     let model     = Character.categories
-    let view      = Views.index model (Character.achievements character)
+    let view      = Views.index model (character |> Character.fromString |> Character.achievements)
     htmlView view
 
 let calendarHandler character =
     let char =
         character
+        |> Character.fromString
         |> Character.achievements
     let achievements =
         char
@@ -47,7 +48,10 @@ let calendarHandler character =
     htmlView view
 
 let storylinesHandler character =
-    let view = Views.storylines StorylineData.storylines <| Character.character character
+    let model =
+        StorylineData.storylines
+        |> List.map (character |> Character.fromString |> Storylines.fromData)
+    let view = Views.storylines model
     htmlView view
 
 let webApp =
