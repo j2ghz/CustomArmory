@@ -67,45 +67,58 @@ let calendar (model: seq<DateTime*seq<int64*XmlNode>>) =
         )]
     ] |> layout
 
+let join (separator:string) (items:string list) = String.Join(separator,items)
+
+let ifTrueClass list =
+    list
+    |> List.where (fun (b,c) -> b)
+    |> List.map snd
+    |> join " "
+    |> _class
+
 let card header body list =
     div [ _class "card" ] [
         div [ _class "card-header" ] [ encodedText header]
         div [ _class "card-body" ] body
-        div [ _class "list-group list-group-flush" ] list
+        ul [ _class "list-group list-group-flush" ] (
+            list
+            |> List.map (fun (link,b) ->
+                li [ (ifTrueClass [ (true,"list-group-item"); (b,"list-group-item-success") ] ) ] (link))
+        )
     ]
 
-let wrap earned item =
-    div [
-        sprintf "%s" (if earned then "done" else "") |> _class
-    ] item
-
-let rec storyline = function
+let rec storyline x : (XmlNode list*bool) =
+    match x with
     | Step (name,required,slis) ->
-        [
-            card name ( required |> List.map storyline ) ( slis |> List.map storyline )
-        ] |> wrap false
+        let steps = slis |> List.map storyline
+        ([
+            card name ( required |> List.collect (storyline >> fst) ) ( steps )
+        ],
+        steps |> List.last |>  snd |> eq true )
     | ParallelStep (name,required,slis) ->
-        [
-            card name ( required |> List.map storyline ) ( slis |> List.map storyline )
-        ] |> wrap false
+        let steps = slis |> List.map storyline
+        ([
+            card name ( required |> List.collect (storyline >> fst) ) ( steps )
+        ],
+        steps |> List.forall (snd >> eq true) )
     | Achievement (id,earned) ->
-        [ a [
+        ([ a [
                 match earned with
                     | Some(who,time) -> sprintf "//wowhead.com/achievement=%i&who=%s&when=%i" id who time
                     | None -> sprintf "//wowhead.com/achievement=%i" id
                 |> _href
                 ] []
-        ] |> wrap false
+        ],earned.IsSome)
     | Level (required,earned,n) ->
-        [
+        ([
             p [] [ sprintf "Level %i/%i" n required |> encodedText ]
-        ] |> wrap earned 
+        ],earned)
     | Quest (id,earned) ->
-        [
+        ([
             a [ sprintf "//wowhead.com/quest=%i" id |> _href ] []
-        ] |> wrap earned 
+        ],earned)
     | Reputation (id,stnading,value,earned) ->
-        [
+        ([
             a [ ( sprintf "//wowhead.com/faction=%i" id |> _href) ] []
             p [] [
                 match earned with
@@ -113,11 +126,11 @@ let rec storyline = function
                 | None -> "Reputation with faction not found"
                 |> encodedText
             ]
-        ] |> wrap (match earned with | Some (e,_,_) -> e | None -> false)
+        ], match earned with | Some (e,_,_) -> e | None -> false)
 
 let storylines (model:ProcessedStorylineItem list) =
     [
         script [] [ rawText "whTooltips.renameLinks= true;" ]
         h1 [] [ encodedText "Storylines" ]
-        div [] [yield! Seq.map storyline model]
+        div [] [yield! Seq.collect (storyline >> fst) model]
     ] |> layout
