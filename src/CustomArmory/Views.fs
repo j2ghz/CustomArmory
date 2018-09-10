@@ -2,10 +2,13 @@
 open Giraffe.GiraffeViewEngine
 open System
 open Storylines
+open System.Collections.Generic
 
 let layout (content: XmlNode list) =
-    html [] [
+    html [ _lang "en" ] [
         head [] [
+            meta [ _charset "utf-8" ]
+            meta [ _name "viewport"; _content "width=device-width, initial-scale=1, shrink-to-fit=no" ]
             title []  [ encodedText "CustomArmory" ]
             link [
                 _rel  "stylesheet"
@@ -20,13 +23,13 @@ let layout (content: XmlNode list) =
                 _href "/main.css"
             ]
             script [] [ rawText "var whTooltips = {colorLinks: true, iconizeLinks: true, renameLinks: false, iconSize: 'large'};" ]
-            script [ _async; _src "https://wow.zamimg.com/widgets/power.js" ] []
         ]
         body [] [
-            div [] content
+            div [ _class "container" ] [yield! content]
             script [ _src "https://code.jquery.com/jquery-3.3.1.slim.min.js"; _integrity "sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"; _crossorigin "anonymous" ] []
             script [ _src "https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"; _integrity "sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"; _crossorigin "anonymous" ] []
             script [ _src "https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"; _integrity "sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"; _crossorigin "anonymous" ] []
+            script [ _async; _src "https://wow.zamimg.com/widgets/power.js" ] []
         ]
     ]
 
@@ -64,40 +67,45 @@ let calendar (model: seq<DateTime*seq<int64*XmlNode>>) =
         )]
     ] |> layout
 
+let card header body list =
+    div [ _class "card" ] [
+        div [ _class "card-header" ] [ encodedText header]
+        div [ _class "card-body" ] body
+        div [ _class "list-group list-group-flush" ] list
+    ]
+
 let wrap earned item =
-    li [
-        sprintf "step %s" (if earned then "done" else "") |> _class
+    div [
+        sprintf "%s" (if earned then "done" else "") |> _class
     ] item
 
 let rec storyline = function
     | Step (name,required,slis) ->
-        li [ ] [
-            strong [] [ encodedText name ]
-            ul [] ( required |> List.map storyline)
-            p [] [ encodedText "Steps:"]
-            div [ _class "steps" ] [ ol [ ] ( slis |> List.map storyline ) ]
-        ]
+        [
+            card name ( required |> List.map storyline ) ( slis |> List.map storyline )
+        ] |> wrap false
     | ParallelStep (name,required,slis) ->
-        li [ ] [
-            strong [] [ encodedText name ]
-            ul [] ( required |> List.map storyline)
-            p [] [ encodedText "Steps:"]
-            div [ _class "steps" ] ( slis |> List.map storyline)
-        ]
+        [
+            card name ( required |> List.map storyline ) ( slis |> List.map storyline )
+        ] |> wrap false
     | Achievement (id,earned) ->
-        wrap earned.IsSome [ a [
+        [ a [
                 match earned with
                     | Some(who,time) -> sprintf "//wowhead.com/achievement=%i&who=%s&when=%i" id who time
                     | None -> sprintf "//wowhead.com/achievement=%i" id
                 |> _href
                 ] []
-        ]
+        ] |> wrap false
     | Level (required,earned,n) ->
-        wrap earned [p [] [ sprintf "Level %i/%i" n required |> encodedText ]]
+        [
+            p [] [ sprintf "Level %i/%i" n required |> encodedText ]
+        ] |> wrap earned 
     | Quest (id,earned) ->
-        wrap earned [a [ sprintf "//wowhead.com/quest=%i" id |> _href ] []]
+        [
+            a [ sprintf "//wowhead.com/quest=%i" id |> _href ] []
+        ] |> wrap earned 
     | Reputation (id,stnading,value,earned) ->
-        wrap (match earned with | Some (e,_,_) -> e | None -> false) [
+        [
             a [ ( sprintf "//wowhead.com/faction=%i" id |> _href) ] []
             p [] [
                 match earned with
@@ -105,13 +113,11 @@ let rec storyline = function
                 | None -> "Reputation with faction not found"
                 |> encodedText
             ]
-        ]
+        ] |> wrap (match earned with | Some (e,_,_) -> e | None -> false)
 
 let storylines (model:ProcessedStorylineItem list) =
     [
         script [] [ rawText "whTooltips.renameLinks= true;" ]
         h1 [] [ encodedText "Storylines" ]
-        div [ _class "steps" ] [ol [] [
-            yield! model |> Seq.map storyline
-        ]]
+        div [] [yield! Seq.map storyline model]
     ] |> layout
