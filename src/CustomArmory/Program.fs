@@ -10,15 +10,6 @@ open Microsoft.Extensions.DependencyInjection
 open Giraffe
 
 // ---------------------------------
-// Models
-// ---------------------------------
-
-type Message =
-    {
-        Text : string
-    }
-
-// ---------------------------------
 // Web app
 // ---------------------------------
 

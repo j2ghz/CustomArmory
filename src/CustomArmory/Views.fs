@@ -10,12 +10,24 @@ let layout (content: XmlNode list) =
             link [
                 _rel  "stylesheet"
                 _type "text/css"
+                _href "https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+                _crossorigin "anonymous"
+                _integrity "sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+            ]
+            link [
+                _rel  "stylesheet"
+                _type "text/css"
                 _href "/main.css"
             ]
             script [] [ rawText "var whTooltips = {colorLinks: true, iconizeLinks: true, renameLinks: false, iconSize: 'large'};" ]
             script [ _async; _src "https://wow.zamimg.com/widgets/power.js" ] []
         ]
-        body [] content
+        body [] [
+            div [] content
+            script [ _src "https://code.jquery.com/jquery-3.3.1.slim.min.js"; _integrity "sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"; _crossorigin "anonymous" ] []
+            script [ _src "https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"; _integrity "sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"; _crossorigin "anonymous" ] []
+            script [ _src "https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"; _integrity "sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"; _crossorigin "anonymous" ] []
+        ]
     ]
 
 let achievementLink' character (id,crs) =
@@ -54,7 +66,7 @@ let calendar (model: seq<DateTime*seq<int64*XmlNode>>) =
 
 let wrap earned item =
     li [
-        sprintf "StepProgress-item %s" (if earned then "is-done" else "") |> _class
+        sprintf "step %s" (if earned then "done" else "") |> _class
     ] item
 
 let rec storyline = function
@@ -62,13 +74,15 @@ let rec storyline = function
         li [ ] [
             strong [] [ encodedText name ]
             ul [] ( required |> List.map storyline)
-            div [ ] [ ol [ _class "StepProgress" ] ( slis |> List.map storyline ) ]
+            p [] [ encodedText "Steps:"]
+            div [ _class "steps" ] [ ol [ ] ( slis |> List.map storyline ) ]
         ]
     | ParallelStep (name,required,slis) ->
         li [ ] [
             strong [] [ encodedText name ]
             ul [] ( required |> List.map storyline)
-            div [ _style "display: flex;" ] ( slis |> List.map storyline)
+            p [] [ encodedText "Steps:"]
+            div [ _class "steps" ] ( slis |> List.map storyline)
         ]
     | Achievement (id,earned) ->
         wrap earned.IsSome [ a [
@@ -83,7 +97,7 @@ let rec storyline = function
     | Quest (id,earned) ->
         wrap earned [a [ sprintf "//wowhead.com/quest=%i" id |> _href ] []]
     | Reputation (id,stnading,value,earned) ->
-        wrap earned.IsSome [
+        wrap (match earned with | Some (e,_,_) -> e | None -> false) [
             a [ ( sprintf "//wowhead.com/faction=%i" id |> _href) ] []
             p [] [
                 match earned with
@@ -97,7 +111,7 @@ let storylines (model:ProcessedStorylineItem list) =
     [
         script [] [ rawText "whTooltips.renameLinks= true;" ]
         h1 [] [ encodedText "Storylines" ]
-        ol [] [
+        div [ _class "steps" ] [ol [] [
             yield! model |> Seq.map storyline
-        ]
+        ]]
     ] |> layout
