@@ -3,7 +3,7 @@ WORKDIR /app
 
 # copy csproj and restore as distinct layers
 
-COPY src/CustomArmory/*.csproj ./aspnetapp/
+COPY src/CustomArmory/*.fsproj ./aspnetapp/
 RUN dotnet restore
 
 # copy everything else and build app
