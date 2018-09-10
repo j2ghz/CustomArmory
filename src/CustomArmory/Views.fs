@@ -87,8 +87,7 @@ let card header body list =
         )
     ]
 
-let rec storyline x : (XmlNode list*bool) =
-    match x with
+let rec storyline = function
     | Step (name,required,slis) ->
         let steps = slis |> List.map storyline
         ([
