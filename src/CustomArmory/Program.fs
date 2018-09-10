@@ -35,11 +35,11 @@ let calendarHandler character =
     let achievements =
         char
         |> Character.completedAchievements
-        |> Seq.map (fun (id,time) -> time, Giraffe.GiraffeViewEngine.a [ Giraffe.GiraffeViewEngine.Attributes._href (sprintf "//wowhead.com/achievement=%i&who=%s&when=%i" id character time ) ] [])
+        |> Seq.map (fun (id,time) -> time, GiraffeViewEngine.a [ GiraffeViewEngine.Attributes._href (sprintf "//wowhead.com/achievement=%i&who=%s&when=%i" id character time ) ] [])
     let criteria =
         char
         |> Character.criteriaDate
-        |> Seq.map (fun (id,time) -> time, Giraffe.GiraffeViewEngine.p [] [string id |> GiraffeViewEngine.encodedText])
+        |> Seq.map (fun (id,time) -> time, GiraffeViewEngine.p [] [string id |> GiraffeViewEngine.encodedText])
     let model =
         achievements
         |> Seq.groupBy (fun (timestamp,_) -> (DateTimeOffset.FromUnixTimeMilliseconds timestamp).Date)

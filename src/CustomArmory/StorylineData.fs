@@ -21,11 +21,11 @@ let Quests = List.map Quest
 let a12510 =
     Step (
         "Ready for War",
-        [],
+        [Achievement 12582],
         [
             Step (
                 "War Campaign Introduction",
-                [Achievement 12582],
+                [],
                 (Quests [ 52654;52544;53332;51714;51715; 53074; 51569 ])
             )
             ParallelStep (
