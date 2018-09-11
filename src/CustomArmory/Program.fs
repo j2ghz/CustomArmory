@@ -57,7 +57,7 @@ let webApp =
                         route "/calendar" >=> calendarHandler src
                         route "/storylines" >=> storylinesHandler src
                     ]
-                )                
+                )
             ]
         setStatusCode 404 >=> text "Not Found" ]
 
@@ -94,8 +94,7 @@ let configureServices (services : IServiceCollection) =
     services.AddGiraffe() |> ignore
 
 let configureLogging (builder : ILoggingBuilder) =
-    let filter (l : LogLevel) = l.Equals LogLevel.Error
-    builder(*.AddFilter(filter)*).AddConsole().AddDebug() |> ignore
+    builder.AddConsole().AddDebug() |> ignore
 
 [<EntryPoint>]
 let main _ =
