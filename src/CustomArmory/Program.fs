@@ -7,39 +7,42 @@ open Microsoft.AspNetCore.Cors.Infrastructure
 open Microsoft.AspNetCore.Hosting
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.DependencyInjection
+open FSharp.Control.Tasks.V2.ContextInsensitive
 open Giraffe
+open Views
 
 // ---------------------------------
 // Web app
 // ---------------------------------
 
 let calendarHandler (server,realm,character) =
-    let char =
-        character
-        |> Character.fromString
-        |> Character.achievements
-    let achievements =
-        char
-        |> Character.completedAchievements
-        |> Seq.map (fun (id,time) -> time, GiraffeViewEngine.a [ GiraffeViewEngine.Attributes._href (sprintf "//wowhead.com/achievement=%i&who=%s&when=%i" id character time ) ] [])
-    let criteria =
-        char
-        |> Character.criteriaDate
-        |> Seq.map (fun (id,time) -> time, GiraffeViewEngine.p [] [string id |> GiraffeViewEngine.encodedText])
-    let model =
-        achievements
-        |> Seq.groupBy (fun (timestamp,_) -> (DateTimeOffset.FromUnixTimeMilliseconds timestamp).Date)
-        |> Seq.sortBy fst
-    let view      = Views.calendar model
-    htmlView view
+    task {
+        let! char =
+            character
+            |> BattleNetApi.character
+        let model =
+            char
+            |> BattleNetApi.achievements
+            |> Map.toSeq
+            |> Seq.map (fun (id,time) -> time, GiraffeViewEngine.a [ GiraffeViewEngine.Attributes._href (sprintf "//wowhead.com/achievement=%i&who=%s&when=%i" id character time ) ] [])
+            |> Seq.groupBy (fun (timestamp,_) -> (DateTimeOffset.FromUnixTimeMilliseconds timestamp).Date)
+            |> Seq.sortBy fst
+        let view      = Views.calendar model
+        return htmlView view
+    }
 
-let storylinesHandler (server,realm,character) next ctx =
-    let key = ctx.
-    let model =
-        StorylineData.storylines
-        |> List.map (character |> Character.fromString |> Storylines.fromData)
-    let view = Views.storylines model
-    htmlView view next ctx
+let storylinesHandler server realm character =
+    task {
+        let! charData =
+            BattleNetApi.characterUrl "" server realm character
+            |> BattleNetApi.character
+        let storylineData = Storylines.fromData charData
+        let model =
+            StorylineData.storylines
+            |> List.map storylineData
+        let view = Views.storylines model
+        return htmlView view
+    }
 
 let webApp =
     choose [
