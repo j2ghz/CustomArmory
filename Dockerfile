@@ -9,7 +9,7 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
       
 WORKDIR src/CustomArmory/
 
-RUN dotnet restore
-RUN dotnet build -c Release
+RUN dotnet restore CustomArmory.fsproj
+RUN dotnet build -c Release CustomArmory.fsproj
 
-ENTRYPOINT ["dotnet", "run", "-c", "Release"]
+ENTRYPOINT ["dotnet", "run", "-c", "Release", "CustomArmory.fsproj"]
