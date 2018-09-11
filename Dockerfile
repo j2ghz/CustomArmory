@@ -1,5 +1,7 @@
 FROM microsoft/dotnet:sdk
-      
+
+WORKDIR /app
+
 ARG BUILD_DATE
 ARG VCS_REF
 LABEL org.label-schema.build-date=$BUILD_DATE \
@@ -7,9 +9,9 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.vcs-ref=$VCS_REF \
       org.label-schema.schema-version="1.0.0-rc1"
       
-WORKDIR src/CustomArmory/
+COPY src/CustomArmory/*.fsproj .
+RUN dotnet restore
+COPY src/CustomArmory/. .
+RUN dotnet build -c Release
 
-RUN dotnet restore CustomArmory.fsproj
-RUN dotnet build -c Release CustomArmory.fsproj
-
-ENTRYPOINT ["dotnet", "run", "-c", "Release", "CustomArmory.fsproj"]
+ENTRYPOINT ["dotnet", "run", "-c", "Release"]
