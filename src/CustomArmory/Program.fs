@@ -13,11 +13,6 @@ open Giraffe
 // Web app
 // ---------------------------------
 
-let indexHandler (server,realm,character) =
-    let model     = Character.categories
-    let view      = Views.index model (character |> Character.fromString |> Character.achievements)
-    htmlView view
-
 let calendarHandler (server,realm,character) =
     let char =
         character
@@ -38,12 +33,13 @@ let calendarHandler (server,realm,character) =
     let view      = Views.calendar model
     htmlView view
 
-let storylinesHandler (server,realm,character) =
+let storylinesHandler (server,realm,character) next ctx =
+    let key = ctx.
     let model =
         StorylineData.storylines
         |> List.map (character |> Character.fromString |> Storylines.fromData)
     let view = Views.storylines model
-    htmlView view
+    htmlView view next ctx
 
 let webApp =
     choose [
@@ -52,7 +48,6 @@ let webApp =
                 route "/" >=> redirectTo false "/eu/chamber-of-aspects/Kosiilspaan/storylines"
                 subRoutef "/%s/%s/%s" (fun src ->
                     choose [
-                        route "/" >=> indexHandler src
                         route "/calendar" >=> calendarHandler src
                         route "/storylines" >=> storylinesHandler src
                     ]

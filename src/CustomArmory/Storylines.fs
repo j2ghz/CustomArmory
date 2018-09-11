@@ -1,6 +1,7 @@
 ﻿module Storylines
 
 open StorylineData
+open BattleNetApi
 
 type Earned = bool
 type LevelEarned = int
@@ -35,15 +36,16 @@ let rec fromData c = function
         Achievement(
             id,
             c
-                |> Character.achievements
-                |> Character.completedAchievements
-                |> Seq.tryFind (fst >> eq id)
-                |> Option.bind (function time -> AchievementEarned(c.Name,snd time) |> Some )
+                |> achievements
+                |> Map.tryFind id
+                |> Option.bind (function time -> AchievementEarned(c.Name, time) |> Some )
             )
     | StorylineData.Quest(id) ->
         Quest(
             id,
-            Character.questCompleted c id
+            c
+            |> quests
+            |> Array.contains id
         )
     | StorylineData.Reputation(id,standing,value) ->
         let rep = c.Reputation
