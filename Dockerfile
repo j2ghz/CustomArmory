@@ -24,4 +24,4 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
       
 WORKDIR /app
 COPY --from=build /app/out ./
-ENTRYPOINT ["dotnet", "aspnetapp.dll"]
+ENTRYPOINT ["dotnet", "CustomArmory.dll"]
