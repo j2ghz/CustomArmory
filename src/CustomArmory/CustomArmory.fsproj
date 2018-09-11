@@ -3,7 +3,6 @@
     <AssemblyName>CustomArmory</AssemblyName>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <UserSecretsId>c078907a-ca51-420b-b496-9c5c44679ae6</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
     <Content Include="SmapleData/*.json" />
