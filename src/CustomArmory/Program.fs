@@ -50,7 +50,7 @@ let webApp =
         GET >=>
             choose [
                 route "/" >=> redirectTo false "/eu/chamber-of-aspects/Kosiilspaan/storylines"
-                subRoutef "/%s/%s/%s/" (fun src ->
+                subRoutef "/%s/%s/%s" (fun src ->
                     choose [
                         route "/" >=> indexHandler src
                         route "/calendar" >=> calendarHandler src
