@@ -12,6 +12,7 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
 COPY src/CustomArmory/*.fsproj .
 RUN dotnet restore
 COPY src/CustomArmory/. .
-RUN dotnet build -c Release
+RUN dotnet publish -c Release -o out
+WORKDIR /app/out
 
-ENTRYPOINT ["dotnet", "run", "-c", "Release"]
+ENTRYPOINT ["dotnet", "CustomArmory.dll"]
