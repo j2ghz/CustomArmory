@@ -13,12 +13,12 @@ open Giraffe
 // Web app
 // ---------------------------------
 
-let indexHandler character =
+let indexHandler (server,realm,character) =
     let model     = Character.categories
     let view      = Views.index model (character |> Character.fromString |> Character.achievements)
     htmlView view
 
-let calendarHandler character =
+let calendarHandler (server,realm,character) =
     let char =
         character
         |> Character.fromString
@@ -38,7 +38,7 @@ let calendarHandler character =
     let view      = Views.calendar model
     htmlView view
 
-let storylinesHandler character =
+let storylinesHandler (server,realm,character) =
     let model =
         StorylineData.storylines
         |> List.map (character |> Character.fromString |> Storylines.fromData)
@@ -49,10 +49,14 @@ let webApp =
     choose [
         GET >=>
             choose [
-                route "/" >=> redirectTo false "/Kosiilspaan/storylines"
-                routef "/%s/" indexHandler
-                routef "/%s/calendar" calendarHandler
-                routef "/%s/storylines" storylinesHandler
+                route "/" >=> redirectTo false "/eu/chamber-of-aspects/Kosiilspaan/storylines"
+                subRoutef "/%s/%s/%s/" (fun src ->
+                    choose [
+                        route "/" >=> indexHandler src
+                        route "/calendar" >=> calendarHandler src
+                        route "/storylines" >=> storylinesHandler src
+                    ]
+                )                
             ]
         setStatusCode 404 >=> text "Not Found" ]
 
