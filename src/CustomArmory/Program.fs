@@ -2,6 +2,7 @@ module CustomArmory.App
 
 open System
 open System.IO
+open Microsoft.AspNetCore.Http
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Cors.Infrastructure
 open Microsoft.AspNetCore.Hosting
@@ -15,34 +16,36 @@ open Views
 // Web app
 // ---------------------------------
 
-let calendarHandler (server,realm,character) =
-    task {
-        let! char =
-            character
-            |> BattleNetApi.character
-        let model =
-            char
-            |> BattleNetApi.achievements
-            |> Map.toSeq
-            |> Seq.map (fun (id,time) -> time, GiraffeViewEngine.a [ GiraffeViewEngine.Attributes._href (sprintf "//wowhead.com/achievement=%i&who=%s&when=%i" id character time ) ] [])
-            |> Seq.groupBy (fun (timestamp,_) -> (DateTimeOffset.FromUnixTimeMilliseconds timestamp).Date)
-            |> Seq.sortBy fst
-        let view      = Views.calendar model
-        return htmlView view
-    }
+let calendarHandler (server,realm,character) : HttpHandler =
+    fun (next : HttpFunc) (ctx : HttpContext) ->
+        task {
+            let! char =
+                character
+                |> BattleNetApi.character
+            let model =
+                char
+                |> BattleNetApi.achievements
+                |> Map.toSeq
+                |> Seq.map (fun (id,time) -> time, GiraffeViewEngine.a [ GiraffeViewEngine.Attributes._href (sprintf "//wowhead.com/achievement=%i&who=%s&when=%i" id character time ) ] [])
+                |> Seq.groupBy (fun (timestamp,_) -> (DateTimeOffset.FromUnixTimeMilliseconds timestamp).Date)
+                |> Seq.sortBy fst
+            let view      = Views.calendar model
+            return! htmlView view next ctx
+        }
 
-let storylinesHandler server realm character =
-    task {
-        let! charData =
-            BattleNetApi.characterUrl "" server realm character
-            |> BattleNetApi.character
-        let storylineData = Storylines.fromData charData
-        let model =
-            StorylineData.storylines
-            |> List.map storylineData
-        let view = Views.storylines model
-        return htmlView view
-    }
+let storylinesHandler (server,realm,character) : HttpHandler =
+    fun (next : HttpFunc) (ctx : HttpContext) ->
+        task {
+            let! charData =
+                BattleNetApi.characterUrl "" server realm character
+                |> BattleNetApi.character
+            let storylineData = Storylines.fromData charData
+            let model =
+                StorylineData.storylines
+                |> List.map storylineData
+            let view = Views.storylines model
+            return! htmlView view next ctx
+        }
 
 let webApp =
     choose [

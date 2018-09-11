@@ -93,7 +93,7 @@ let rec storyline = function
         ],earned)
     | Reputation (id,stnading,value,earned) ->
         ([
-            a [ ( sprintf "//wowhead.com/faction=%i" id |> _href) ] []
+            a [ ( sprintf "//wowhead.com/faction=%i" id |> _href) ] [ encodedText "Unknown faction" ]
             p [] [
                 match earned with
                 | Some(e,s,v) -> sprintf "Standing: %i/%i Value: %i/%i" s stnading v value
