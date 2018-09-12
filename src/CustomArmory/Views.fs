@@ -51,20 +51,23 @@ let ifTrueClass list =
     |> join " "
     |> _class
 
+let ifTrueInclude =
+    List.where (snd >> eq true) >> List.map fst
+
 let card header body list =
-    div [ _class "card" ] [
-        div [ _class "card-header" ] [ encodedText header]
+    div [ _class "card" ] (ifTrueInclude [
+        div [ _class "card-header" ] [ encodedText header],true
         div [ ifTrueClass [true,"card-body container-fluid"; List.forall snd body,"list-group-item-success"] ] [
             div [ _class "row" ] (
                 body |> List.map (fun (item,earned) -> div [ ifTrueClass [true, "col"; earned, "list-group-item-success"]] item )
             )
-        ]
+        ],List.isEmpty body |> not
         ul [ _class "list-group list-group-flush" ] (
             list
             |> List.map (fun (link,b) ->
                 li [ (ifTrueClass [ (true,"list-group-item"); (b,"list-group-item-success") ] ) ] (link))
-        )
-    ]
+        ),List.isEmpty list |> not
+    ])
 
 let rec storyline = function
     | Step (name,required,slis) ->
