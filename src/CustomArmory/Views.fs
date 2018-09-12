@@ -22,7 +22,7 @@ let layout (content: XmlNode list) =
                 _type "text/css"
                 _href "/main.css"
             ]
-            script [] [ rawText "var whTooltips = {colorLinks: true, iconizeLinks: true, renameLinks: false, iconSize: 'large'};" ]
+            script [] [ rawText "var whTooltips = {colorLinks: true, iconizeLinks: true, renameLinks: true, iconSize: 'tiny'};" ]
         ]
         body [] [
             div [ _class "container" ] [yield! content]
@@ -111,7 +111,6 @@ let rec storyline = function
 
 let storylines (model:ProcessedStorylineItem list) =
     [
-        script [] [ rawText "whTooltips.renameLinks= true;" ]
         h1 [] [ encodedText "Storylines" ]
         div [] [yield! Seq.collect (storyline >> fst) model]
     ] |> layout
