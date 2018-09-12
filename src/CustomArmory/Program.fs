@@ -11,6 +11,7 @@ open Microsoft.Extensions.DependencyInjection
 open FSharp.Control.Tasks.V2.ContextInsensitive
 open Giraffe
 open Views
+open Microsoft.Extensions.Configuration
 
 // ---------------------------------
 // Web app
@@ -96,8 +97,17 @@ let configureServices (services : IServiceCollection) =
 let configureLogging (builder : ILoggingBuilder) =
     builder.AddConsole().AddDebug() |> ignore
 
+let configureAppConfiguration (args:string[]) (context: WebHostBuilderContext) (config: IConfigurationBuilder) =  
+    config
+        .AddJsonFile("appsettings.json",false,true)
+        .AddJsonFile(sprintf "appsettings.%s.json" context.HostingEnvironment.EnvironmentName ,true)
+        .AddEnvironmentVariables()
+        //.AddUserSecrets() https://github.com/Microsoft/visualfsharp/issues/5549#issuecomment-417804392 Wait for release 2.2
+        .AddCommandLine(args)
+        |> ignore
+
 [<EntryPoint>]
-let main _ =
+let main args =
     let contentRoot = Directory.GetCurrentDirectory()
     let webRoot     = Path.Combine(contentRoot, "WebRoot")
     WebHostBuilder()
@@ -105,6 +115,7 @@ let main _ =
         .UseContentRoot(contentRoot)
         .UseIISIntegration()
         .UseWebRoot(webRoot)
+        .ConfigureAppConfiguration(configureAppConfiguration args)
         .Configure(Action<IApplicationBuilder> configureApp)
         .ConfigureServices(configureServices)
         .ConfigureLogging(configureLogging)
