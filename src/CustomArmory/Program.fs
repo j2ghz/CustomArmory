@@ -13,6 +13,9 @@ open Giraffe
 open Views
 open Microsoft.Extensions.Configuration
 
+let config (ctx : HttpContext) key = ctx.GetService<IConfiguration>().[key]
+
+
 // ---------------------------------
 // Web app
 // ---------------------------------
@@ -38,7 +41,7 @@ let storylinesHandler (server,realm,character) : HttpHandler =
     fun (next : HttpFunc) (ctx : HttpContext) ->
         task {
             let! charData =
-                BattleNetApi.characterUrl "" server realm character
+                BattleNetApi.characterUrl (config ctx "BattleNetApiKey") server realm character
                 |> BattleNetApi.character
             let storylineData = Storylines.fromData charData
             let model =
@@ -99,8 +102,9 @@ let configureLogging (builder : ILoggingBuilder) =
 
 let configureAppConfiguration (args:string[]) (context: WebHostBuilderContext) (config: IConfigurationBuilder) =  
     config
-        .AddJsonFile("appsettings.json",false,true)
+        .AddJsonFile("appsettings.json",false)
         .AddJsonFile(sprintf "appsettings.%s.json" context.HostingEnvironment.EnvironmentName ,true)
+        .AddJsonFile("appsettings.secrets.json",true)
         .AddEnvironmentVariables()
         //.AddUserSecrets() https://github.com/Microsoft/visualfsharp/issues/5549#issuecomment-417804392 Wait for release 2.2
         .AddCommandLine(args)
