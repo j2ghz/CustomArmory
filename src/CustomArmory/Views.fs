@@ -54,7 +54,11 @@ let ifTrueClass list =
 let card header body list =
     div [ _class "card" ] [
         div [ _class "card-header" ] [ encodedText header]
-        div [ _class "card-body" ] body
+        div [ ifTrueClass [true,"card-body container-fluid"; List.forall snd body,"list-group-item-success"] ] [
+            div [ _class "row" ] (
+                body |> List.map (fun (item,earned) -> div [ ifTrueClass [true, "col"; earned, "list-group-item-success"]] item )
+            )
+        ]
         ul [ _class "list-group list-group-flush" ] (
             list
             |> List.map (fun (link,b) ->
@@ -66,13 +70,13 @@ let rec storyline = function
     | Step (name,required,slis) ->
         let steps = slis |> List.map storyline
         ([
-            card name ( required |> List.collect (storyline >> fst) ) ( steps )
+            card name ( required |> List.map (storyline) ) ( steps )
         ],
         steps |> List.last |>  snd |> eq true )
     | ParallelStep (name,required,slis) ->
         let steps = slis |> List.map storyline
         ([
-            card name ( required |> List.collect (storyline >> fst) ) ( steps )
+            card name ( required |> List.map (storyline) ) ( steps )
         ],
         steps |> List.forall (snd >> eq true) )
     | Achievement (id,earned) ->
