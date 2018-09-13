@@ -20,6 +20,13 @@ let layout (content: XmlNode list) =
             link [
                 _rel  "stylesheet"
                 _type "text/css"
+                _href "https://use.fontawesome.com/releases/v5.3.1/css/all.css"
+                _crossorigin "anonymous"
+                _integrity "sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU"
+            ]
+            link [
+                _rel  "stylesheet"
+                _type "text/css"
                 _href "/main.css"
             ]
             script [] [ rawText "var whTooltips = {colorLinks: true, iconizeLinks: true, renameLinks: true, iconSize: 'tiny'};" ]
@@ -51,35 +58,52 @@ let ifTrueClass list =
     |> join " "
     |> _class
 
+let wrapIcon (items,earned) =
+    i [ _class (
+            match earned with
+            | true ->  "fas fa-check"
+            | false -> "fas fa-times"
+    )] []
+    ::     
+    items
+
 let ifTrueInclude =
     List.where (snd >> eq true) >> List.map fst
 
-let card header body list =
+let card p header body list =
     div [ _class "card" ] (ifTrueInclude [
-        div [ _class "card-header" ] [ encodedText header],true
-        div [ ifTrueClass [true,"card-body container-fluid"; List.forall snd body,"list-group-item-success"] ] [
+        div [ _class "card-header" ] [ encodedText header ],true
+
+        div [ _class "card-body container-fluid" ] [
             div [ _class "row" ] (
-                body |> List.map (fun (item,earned) -> div [ ifTrueClass [true, "col"; earned, "list-group-item-success"]] item )
+                body |> List.map (wrapIcon >> fun item -> div [ _class "col" ] item )
             )
-        ],List.isEmpty body |> not
+        ], List.isEmpty body |> not
+
         ul [ _class "list-group list-group-flush" ] (
             list
-            |> List.map (fun (link,b) ->
-                li [ (ifTrueClass [ (true,"list-group-item"); (b,"list-group-item-success") ] ) ] (link))
-        ),List.isEmpty list |> not
+            |> List.map (wrapIcon >> fun link ->
+                li [ _class "list-group-item" ] (link))
+        ), List.isEmpty list |> not && not p
+
+        div [ _class "card-body container-fluid" ] [
+            div [ _class "row" ] (
+                list |> List.map (wrapIcon >> fun link -> div [ _class "col" ] (link))
+            )
+        ], List.isEmpty list |> not && p
     ])
 
 let rec storyline = function
     | Step (name,required,slis) ->
         let steps = slis |> List.map storyline
         ([
-            card name ( required |> List.map (storyline) ) ( steps )
+            card false name ( required |> List.map (storyline) ) ( steps )
         ],
         steps |> List.last |>  snd |> eq true )
     | ParallelStep (name,required,slis) ->
         let steps = slis |> List.map storyline
         ([
-            card name ( required |> List.map (storyline) ) ( steps )
+            card true name ( required |> List.map (storyline) ) ( steps )
         ],
         steps |> List.forall (snd >> eq true) )
     | Achievement (id,earned) ->
