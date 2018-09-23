@@ -100,4 +100,12 @@ let a53406 =
             Step("Upgrade 3", [ Reputation(2164,6,0) ], [ Quest 53406 ])
         ]
     )
-let storylines = [ a12510; a12997; a53406 ]
+
+let a12989 =
+    Step(
+        "Battle for Azeroth Pathfinder, Part One",
+        [],
+        [ Achievement 12989 ]
+    )
+
+let storylines = [ a12510; a12997; a53406; a12989 ]
