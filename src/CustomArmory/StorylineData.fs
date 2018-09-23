@@ -88,4 +88,16 @@ let a12997 =
         (Quests [52246;52762;52252;52253;52311;52445;52449;52453;52509;52508;52510;52511;52512;52513;52481;52482;52483;52484;52485;52486;52487;52488;51445;52153])
     )
 
-let storylines = [ a12510; a12997 ]
+let a53406 =
+    Step(
+        "Heart of Azeroth",
+        [
+            Achievement 12918
+        ],
+        [
+            Step("Upgrade 1", [ Reputation(2164,4,0) ], [ Quest 50973 ])
+            Step("Upgrade 2", [ Reputation(2164,5,0) ], [ Quest 53405 ])
+            Step("Upgrade 3", [ Reputation(2164,6,0) ], [ Quest 53406 ])
+        ]
+    )
+let storylines = [ a12510; a12997; a53406 ]
