@@ -17,6 +17,7 @@ type StorylineItem =
 | Level of LevelRequired
 
 let Quests = List.map Quest
+let Achievements = List.map Achievement
 
 let a12510 =
     Step (
@@ -105,7 +106,36 @@ let a12989 =
     Step(
         "Battle for Azeroth Pathfinder, Part One",
         [],
-        [ Achievement 12989 ]
+        [ 
+            ParallelStep(
+                "",
+                [],
+                [
+                    Achievement 13144
+                    Achievement 12510
+                    ParallelStep(
+                        "Kul tourist",
+                        [],
+                        [
+                            Achievement 12496
+                            Achievement 12497
+                            Achievement 12473
+                        ]
+                    )
+                    ParallelStep(
+                        "Battle for Azeroth Explorer",
+                        [],
+                        Achievements [12556 .. 12561]
+                    )
+                    ParallelStep(
+                        "Azerothian Diplomat",
+                        [],
+                        [2159 .. 2164] |> List.map (fun i -> Reputation(i,6,0))
+                    )
+                ]
+            )
+            Achievement 12989
+        ]
     )
 
-let storylines = [ a12510; a12997; a53406; a12989 ]
+let storylines = [ a12989; a12510; a12997; a53406 ]
