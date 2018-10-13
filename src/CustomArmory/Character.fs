@@ -1,4 +1,4 @@
-﻿dule Character
+﻿module Character
 
 open FSharp.Data
 open System
