@@ -67,55 +67,40 @@ let wrapIcon (items,earned) =
     ::     
     items
 
-let ifTrueInclude =
-    List.where (snd >> eq true) >> List.map fst
+let card header content =
+    div [ _class "card" ] [
+        div [ _class "card-header" ] header
 
-let card p header body list =
-    div [ _class "card" ] (ifTrueInclude [
-        div [ _class "card-header" ] [ encodedText header ],true
-
-        div [ _class "card-body container-fluid" ] [
-            div [ _class "row" ] (
-                body |> List.map (wrapIcon >> fun item -> div [ _class "col" ] item )
-            )
-        ], List.isEmpty body |> not
-
-        ul [ _class "list-group list-group-flush" ] (
-            list
-            |> List.map (wrapIcon >> fun link ->
-                li [ _class "list-group-item" ] (link))
-        ), List.isEmpty list |> not && not p
-
-        div [ _class "card-body container-fluid" ] [
-            div [ _class "row" ] (
-                list |> List.map (wrapIcon >> fun link -> div [ _class "col" ] (link))
-            )
-        ], List.isEmpty list |> not && p
-    ])
+        div [ _class "card-body" ] content
+    ]
 
 let rec storyline = function
-    | TextHeading(_, _, _) -> failwith "Not Implemented"
-    | ItemHeading(_, _, _) -> failwith "Not Implemented"
-    | Sequential(_, _) -> failwith "Not Implemented"
-    | Parallel(_, _) -> failwith "Not Implemented"
+    | TextHeading(title, item, completed) ->
+        [ card [ h1 [] [ encodedText title ] ] ( item |> storyline ) ]
+    | ItemHeading(title, item, completed) ->
+        [ card [ h1 [] ( title |> storyline ) ] ( item |> storyline ) ]
+    | Sequential(items, _) ->
+        [ div [ _class "d-inline-flex flex-column" ] (items |> List.collect storyline) ]
+    | Parallel(items, _) ->
+        [ div [ _class "d-inline-flex" ] (items |> List.collect storyline) ]
     | Achievement (id,earned) ->
-        ([ a [
+        [ a [
                 match earned with
                     | Some(who,time) -> sprintf "//wowhead.com/achievement=%i&who=%s&when=%i" id who time
                     | None -> sprintf "//wowhead.com/achievement=%i" id
                 |> _href
                 ] []
-        ],earned.IsSome)
+        ]
     | Level (required,earned,n) ->
-        ([
+        [
             p [] [ sprintf "Level %i/%i" n required |> encodedText ]
-        ],earned)
+        ]
     | Quest (id,earned) ->
-        ([
+        [
             a [ sprintf "//wowhead.com/quest=%i" id |> _href ] []
-        ],earned)
+        ]
     | Reputation (id,stnading,value,earned) ->
-        ([
+        [
             a [ ( sprintf "//wowhead.com/faction=%i" id |> _href) ] [ encodedText "Unknown faction" ]
             p [] [
                 match earned with
@@ -123,10 +108,10 @@ let rec storyline = function
                 | None -> "Reputation with faction not found"
                 |> encodedText
             ]
-        ], match earned with | Some (e,_,_) -> e | None -> false)
+        ]
 
 let storylines (model:ProcessedStorylineItem list) =
     [
         h1 [] [ encodedText "Storylines" ]
-        div [] [yield! Seq.collect (storyline >> fst) model]
+        div [] [yield! Seq.collect (storyline) model]
     ] |> layout
