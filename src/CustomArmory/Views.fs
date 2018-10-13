@@ -94,18 +94,10 @@ let card p header body list =
     ])
 
 let rec storyline = function
-    | Step (name,required,slis) ->
-        let steps = slis |> List.map storyline
-        ([
-            card false name ( required |> List.map (storyline) ) ( steps )
-        ],
-        steps |> List.last |>  snd |> eq true )
-    | ParallelStep (name,required,slis) ->
-        let steps = slis |> List.map storyline
-        ([
-            card true name ( required |> List.map (storyline) ) ( steps )
-        ],
-        steps |> List.forall (snd >> eq true) )
+    | TextHeading(_, _, _) -> failwith "Not Implemented"
+    | ItemHeading(_, _, _) -> failwith "Not Implemented"
+    | Sequential(_, _) -> failwith "Not Implemented"
+    | Parallel(_, _) -> failwith "Not Implemented"
     | Achievement (id,earned) ->
         ([ a [
                 match earned with
