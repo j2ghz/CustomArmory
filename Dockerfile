@@ -14,5 +14,5 @@ RUN dotnet restore
 COPY src/CustomArmory/. .
 RUN dotnet publish -c Release -o out
 WORKDIR /app/out
-
+EXPOSE 80
 ENTRYPOINT ["dotnet", "CustomArmory.dll"]
